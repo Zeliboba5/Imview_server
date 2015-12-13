@@ -157,6 +157,7 @@ def create_comment():
 
     return make_response(str(comment.as_dict()))
 
+
 @app.route('/comment/get', methods=['GET'])
 def get_comments():
     image_id = request.args.get('image_id')
@@ -169,7 +170,3 @@ def get_comments():
 # @app.route('/image/vote', methods=['POST']):
 # login_required()
 # def image_vote():
-
-
-
-
