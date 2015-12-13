@@ -1,4 +1,5 @@
 from app import db
+from flask.ext.login import unicode
 
 
 class Image(db.Model):
@@ -30,6 +31,11 @@ class Comment(db.Model):
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+    def __init__(self, text, user_id, image_id):
+        self.text = text
+        self.user_id = user_id
+        self.image_id = image_id
+
     def __repr__(self):
         return '<Comment %s, %s, %s Image_id - %s>' % (self.body, self.author, self.text, self.image_id)
 
@@ -39,8 +45,25 @@ class Comment(db.Model):
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
-    name = db.Column(db.String, default='anonymous')
+    name = db.Column(db.String, unique=True)
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
+    password = db.Column(db.String)
+
+    def get_id(self):
+        return unicode(self.id)
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def __init__(self, name, password):
+        self.name = name
+        self.password = password
 
     def __repr__(self):
         return '<User %s>' % self.name
