@@ -1,12 +1,10 @@
 import os
 import traceback
 from hashlib import md5
-from random import randint
+from random import randint, choice
 from shutdown import shutdown_server
-
 from app import app
 from app import models, db
-from bcrypt import gensalt
 from flask import request, make_response, Response
 from flask.ext.login import LoginManager, login_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -14,9 +12,18 @@ from werkzeug.utils import secure_filename
 from passlib.apps import custom_app_context as passlib
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*"
 
 lm = LoginManager()
 lm.init_app(app)
+
+
+def gen_salt():
+    salt = []
+    for i in range(0, 16):
+        salt.append(choice(ALPHABET))
+    "".join(salt)
+    return salt
 
 
 @lm.user_loader
@@ -86,7 +93,7 @@ def allowed_file(filename):
 
 def hash_filename(filename):
     arr = filename.rsplit('.', 1)
-    arr[0] += str(gensalt())
+    arr[0] += gen_salt()
     return md5(str(arr[0]).encode()).hexdigest() + '.' + arr[1]
 
 
