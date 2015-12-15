@@ -93,7 +93,6 @@ def add_new_image():
     except:
         traceback.print_exc()
         return Response(status=400)
-
     image = models.Image(filename, request.form['title'], request.form['description'], 0, True)
     db.session.add(image)
     try:
