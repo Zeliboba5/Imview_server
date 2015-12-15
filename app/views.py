@@ -6,6 +6,7 @@ from shutdown import shutdown_server
 
 from app import app
 from app import models, db
+from bcrypt import gensalt
 from flask import request, make_response, Response
 from flask.ext.login import LoginManager, login_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -85,7 +86,7 @@ def allowed_file(filename):
 
 def hash_filename(filename):
     arr = filename.rsplit('.', 1)
-    arr[0] += str(randint(0, 10000))
+    arr[0] += str(gensalt())
     return md5(str(arr[0]).encode()).hexdigest() + '.' + arr[1]
 
 
