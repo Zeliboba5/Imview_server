@@ -2,6 +2,7 @@ import os
 import traceback
 from hashlib import md5
 from random import randint
+from shutdown import shutdown_server
 
 from app import app
 from app import models, db
@@ -20,6 +21,15 @@ lm.init_app(app)
 @lm.user_loader
 def load_user(user_id):
     return models.User.query.filter_by(id=user_id).first()
+
+
+@app.route('/shutdown', methods=['POST'])
+@login_required
+def shutdown():
+    if current_user.id == 1:
+        shutdown_server()
+    else:
+        return Response(status=401)
 
 
 @app.route('/login', methods=['POST'])
