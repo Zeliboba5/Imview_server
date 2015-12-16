@@ -1,11 +1,12 @@
 import os
 import traceback
+import json
 from hashlib import md5
 from random import randint, choice
 from shutdown import shutdown_server
 from app import app
 from app import models, db
-from flask import request, make_response, Response
+from flask import request, make_response, Response, jsonify
 from flask.ext.login import LoginManager, login_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.utils import secure_filename
@@ -23,7 +24,7 @@ def gen_salt():
     for i in range(0, 16):
         salt.append(choice(ALPHABET))
     "".join(salt)
-    return salt
+    return str(salt)
 
 
 @lm.user_loader
@@ -49,9 +50,9 @@ def login():
         login_user(user, remember=True)
         resp_dict = user.as_dict()
         del resp_dict["password"]
-        return make_response(str(resp_dict))
+        return make_response(jsonify(resp_dict))
     else:
-        response = make_response(str({"error": "wrong username or password"}))
+        response = make_response(jsonify({"error": "wrong username or password"}))
         response.status_code = 401
         return response
 
@@ -68,7 +69,7 @@ def signup():
         db.session.commit()
     except IntegrityError:
         traceback.print_exc()
-        response = make_response(str({"error": "username already in use"}))
+        response = make_response(jsonify({"error": "username already in use"}))
         response.set_status = 400
         response.mimetype = 'application/json'
         return response
@@ -76,7 +77,7 @@ def signup():
     login_user(user, remember=True)
     resp_dict = user.as_dict()
     del resp_dict["password"]
-    response = make_response(str(resp_dict))
+    response = make_response(jsonify(resp_dict))
     response.mimetype = 'application/json'
     return response
 
@@ -128,7 +129,7 @@ def get_image_by_id():
     image_id = request.args.get('image_id')
     if image_id:
         try:
-            response = make_response(models.Image.query.filter_by(id=image_id).first().as_disc())
+            response = make_response(jsonify(models.Image.query.filter_by(id=image_id).first().as_disc()))
         except SQLAlchemyError:
             traceback.print_exc()
             return Response(status=400)
@@ -151,10 +152,7 @@ def get_featured_list():
     image_list = []
     for image in image_set:
         image_list.append(image.as_dict())
-    response = make_response(str(image_list))
-    response.status_code = 200
-    response.mimetype = 'application/json'
-    return response
+    return Response(json.dumps(image_list), status=200, mimetype='application/json')
 
 
 @app.route('/comment/new', methods=['POST'])
@@ -172,7 +170,7 @@ def create_comment():
         traceback.print_exc()
         return Response(status=400)
 
-    return make_response(str(comment.as_dict()))
+    return make_response(jsonify(comment.as_dict()))
 
 
 @app.route('/comment/get', methods=['GET'])
@@ -182,7 +180,7 @@ def get_comments():
     for comment in models.Comment.query.filter_by(image_id=image_id).all():
         comment_list.append(comment.as_dict())
 
-    return make_response(str(comment_list))
+    return make_response(jsonify(comment_list))
 
 # @app.route('/image/vote', methods=['POST']):
 # login_required()
