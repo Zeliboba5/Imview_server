@@ -112,7 +112,7 @@ def add_new_image():
     except:
         traceback.print_exc()
         return Response(status=400)
-    image = models.Image(filename, request.form['title'], request.form['description'], 0, True)
+    image = models.Image(filename, 0)
     db.session.add(image)
     try:
         db.session.commit()
@@ -144,7 +144,12 @@ def get_image_by_id():
 def get_featured_list():
     is_featured = request.args.get('is_featured')
     try:
-        image_set = models.Image.query.filter_by(is_featured=is_featured).all()
+        if is_featured:
+            import datetime
+            yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+            image_set = models.Image.query.filter(models.Image.publish_date > yesterday)
+        else:
+            image_set = models.Image.query.all()
     except SQLAlchemyError:
         traceback.print_exc()
         return Response(status=500)
@@ -173,7 +178,7 @@ def create_comment():
     return make_response(jsonify(comment.as_dict()))
 
 
-@app.route('/comment/get', methods=['GET'])
+@app.route('/comment/list', methods=['GET'])
 def get_comments():
     image_id = request.args.get('image_id')
     comment_list = []

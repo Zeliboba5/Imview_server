@@ -1,22 +1,19 @@
 from app import db
 from flask.ext.login import unicode
+from datetime import datetime
 
 
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
     path = db.Column(db.String, unique=True)
-    title = db.Column(db.String, default="Без названия")
-    description = db.Column(db.String, default="Без описания")
+    publish_date = db.Column(db.DateTime)
     rating = db.Column(db.Integer, default=0)
-    is_featured = db.Column(db.Boolean, default=False)
     comments = db.relationship('Comment', backref='image', lazy='dynamic')
 
-    def __init__(self, path, title, description, rating, is_featured):
+    def __init__(self, path, rating):
         self.path = path
-        self.title = title
-        self.description = description
+        self.publish_date = datetime.now()
         self.rating = rating
-        self.is_featured = is_featured
 
     def __repr__(self):
         return '<Image %s, %s, %s, %s>' % (self.path, self.title, self.description, self.rating)
