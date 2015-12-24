@@ -119,9 +119,8 @@ def add_new_image():
     except SQLAlchemyError:
         traceback.print_exc()
         return Response(status=400)
-    response = make_response()
-    response.status_code = 200
-    return response
+    response = jsonify(image.as_dict())
+    return make_response(response)
 
 
 @app.route('/image/get/', methods=['GET'])
@@ -142,8 +141,8 @@ def get_image_by_id():
 
 @app.route('/image/list', methods=['GET'])
 def get_featured_list():
-    is_featured = request.args.get('is_featured')
     try:
+        is_featured = request.args.get('is_featured')
         if is_featured:
             import datetime
             yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -152,11 +151,13 @@ def get_featured_list():
             image_set = models.Image.query.all()
     except SQLAlchemyError:
         traceback.print_exc()
-        return Response(status=500)
-
+        return Response(status=400)
     image_list = []
     for image in image_set:
-        image_list.append(image.as_dict())
+        image = image.as_dict()
+        image['publish_date'] = str(image['publish_date'])
+        image_list.append(image)
+
     return Response(json.dumps(image_list), status=200, mimetype='application/json')
 
 

@@ -16,7 +16,7 @@ class Image(db.Model):
         self.rating = rating
 
     def __repr__(self):
-        return '<Image %s, %s, %s, %s>' % (self.path, self.title, self.description, self.rating)
+        return '<Image %s, %s>' % (self.path, self.rating)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
