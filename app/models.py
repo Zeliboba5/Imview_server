@@ -2,6 +2,11 @@ from app import db
 from flask.ext.login import unicode
 from datetime import datetime
 
+votes = db.Table('votes',
+                 db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                 db.Column('image_id', db.Integer, db.ForeignKey('image.id'))
+                 )
+
 
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
@@ -9,6 +14,8 @@ class Image(db.Model):
     publish_date = db.Column(db.DateTime)
     rating = db.Column(db.Integer, default=0)
     comments = db.relationship('Comment', backref='image', lazy='dynamic')
+    voted_user = db.relationship('User', secondary=votes,
+                                 backref=db.backref('voted_images', lazy='dynamic'))
 
     def __init__(self, path, rating):
         self.path = path

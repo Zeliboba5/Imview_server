@@ -128,7 +128,7 @@ def get_image_by_id():
     image_id = request.args.get('image_id')
     if image_id:
         try:
-            response = make_response(jsonify(models.Image.query.filter_by(id=image_id).first().as_disc()))
+            response = make_response(jsonify(models.Image.query.filter_by(id=image_id).first().as_dict()))
         except SQLAlchemyError:
             traceback.print_exc()
             return Response(status=400)
@@ -188,6 +188,25 @@ def get_comments():
 
     return make_response(jsonify(comment_list))
 
-# @app.route('/image/vote', methods=['POST']):
-# login_required()
-# def image_vote():
+
+@app.route('/image/vote', methods=['POST'])
+@login_required
+def image_vote():
+    image_id = request.form['image_id']
+    is_upvote = request.form['is_upvote']
+
+    image = models.Image.query.filter_by(id=image_id).first()
+
+    if current_user in image.voted_user:
+        response = {'error': 'already voted', 'error_code': 0}
+        return make_response(jsonify(response))
+    else:
+        image.voted_user.append(current_user)
+        if is_upvote == 1:
+            image.rating += 1
+        else:
+            image.rating -= 1
+        db.session.add(image)
+        db.session.commit()
+
+        return make_response(jsonify(image.as_dict()))
