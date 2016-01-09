@@ -154,8 +154,10 @@ def get_featured_list():
         return Response(status=400)
     image_list = []
     for image in image_set:
+        comments_count = len(image.comments.all())
         image = image.as_dict()
         image['publish_date'] = str(image['publish_date'])
+        image['comments_count'] = comments_count
         image_list.append(image)
 
     return Response(json.dumps(image_list), status=200, mimetype='application/json')
@@ -198,8 +200,9 @@ def image_vote():
     image = models.Image.query.filter_by(id=image_id).first()
 
     if current_user in image.voted_user:
-        response = {'error': 'already voted', 'error_code': 0}
-        return make_response(jsonify(response))
+        response = make_response(jsonify({'error': 'already voted', 'error_code': 0}))
+        response.status_code = 405
+        return response
     else:
         image.voted_user.append(current_user)
         if is_upvote == 1:
