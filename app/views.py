@@ -178,17 +178,30 @@ def create_comment():
         traceback.print_exc()
         return Response(status=400)
 
-    return make_response(jsonify(comment.as_dict()))
+    author = comment.author.as_dict()
+    del author['password']
+    response = comment.as_dict()
+    response['publish_date'] = str(response['publish_date'])
+    response['author'] = author
+    return make_response(jsonify(response))
 
 
 @app.route('/comment/list', methods=['GET'])
 def get_comments():
-    image_id = request.args.get('image_id')
-    comment_list = []
-    for comment in models.Comment.query.filter_by(image_id=image_id).all():
-        comment_list.append(comment.as_dict())
+    try:
+        image_id = request.args.get('image_id')
+        comment_list = []
+        for comment in models.Comment.query.filter_by(image_id=image_id).all():
+            author = comment.author.as_dict()
+            del author['password']
+            comment = comment.as_dict()
+            comment['publish_date'] = str(comment['publish_date'])
+            comment['author'] = author
+            comment_list.append(comment)
 
-    return make_response(jsonify(comment_list))
+        return make_response(json.dumps(comment_list))
+    except:
+        traceback.print_exc()
 
 
 @app.route('/image/vote', methods=['POST'])
@@ -213,3 +226,27 @@ def image_vote():
         db.session.commit()
 
         return make_response(jsonify(image.as_dict()))
+
+
+@app.route('/comment/vote', methods=['POST'])
+@login_required
+def comment_vote():
+    comment_id = request.form['comment_id']
+    is_upvote = request.form['is_upvote']
+
+    comment = models.Comment.query.filter_by(id=comment_id).first()
+
+    if current_user in comment.voted_user:
+        response = make_response(jsonify({'error': 'already voted', 'error_code': 0}))
+        response.status_code = 405
+        return response
+    else:
+        comment.voted_user.append(current_user)
+        if is_upvote == 1:
+            comment.rating += 1
+        else:
+            comment.rating -= 1
+        db.session.add(comment)
+        db.session.commit()
+
+        return make_response(jsonify(comment.as_dict()))
