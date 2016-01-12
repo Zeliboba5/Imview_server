@@ -1,16 +1,18 @@
+import json
 import os
 import traceback
-import json
 from hashlib import md5
-from random import randint, choice
-from shutdown import shutdown_server
-from app import app
-from app import models, db
+from random import choice
+
 from flask import request, make_response, Response, jsonify
 from flask.ext.login import LoginManager, login_user, login_required, current_user
+from passlib.apps import custom_app_context as passlib
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.utils import secure_filename
-from passlib.apps import custom_app_context as passlib
+
+from app import app
+from app import models, db
+from shutdown import shutdown_server
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*"

@@ -32,9 +32,10 @@ class Image(db.Model):
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
     text = db.Column(db.String)
+    publish_date = db.Column(db.DateTime)
+    rating = db.Column(db.Integer, default=0)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    publish_date = db.Column(db.DateTime)
 
     def __init__(self, text, user_id, image_id):
         self.text = text
