@@ -34,11 +34,13 @@ class Comment(db.Model):
     text = db.Column(db.String)
     image_id = db.Column(db.Integer, db.ForeignKey('image.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    publish_date = db.Column(db.DateTime)
 
     def __init__(self, text, user_id, image_id):
         self.text = text
         self.user_id = user_id
         self.image_id = image_id
+        self.publish_date = datetime.now()
 
     def __repr__(self):
         return '<Comment %s, %s, %s Image_id - %s>' % (self.body, self.author, self.text, self.image_id)
